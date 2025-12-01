@@ -26,12 +26,12 @@ jobs:
                   cache: "npm"
 
             - name: Install dependencies
-        run: npm ci
+              run: npm ci
 
-      - name: Build
-        run: npm run dist -- --publish never
+            - name: Build
+              run: npm run dist -- --publish never
 
-      - name: Create Release
+            - name: Create Release
               uses: softprops/action-gh-release@v1
               if: startsWith(github.ref, 'refs/tags/')
               with:
