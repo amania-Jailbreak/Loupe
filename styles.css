@@ -1,0 +1,234 @@
+:root {
+    --bg-color: rgba(30, 30, 30, 0.85);
+    --text-color: #ffffff;
+    --accent-color: #007aff;
+    --selected-bg: rgba(255, 255, 255, 0.1);
+    --border-radius: 12px;
+    --input-height: 60px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+    background: transparent;
+    color: var(--text-color);
+    overflow: hidden;
+}
+
+.container {
+    background: var(--bg-color);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    height: var(--input-height);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-icon {
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 15px;
+}
+
+#search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    outline: none;
+    height: 100%;
+}
+
+.results-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.result-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-item.selected {
+    background: var(--accent-color);
+}
+
+.result-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+.result-content {
+    flex: 1;
+}
+
+.result-title {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.result-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+}
+
+.result-item.selected .result-description {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Settings View */
+.settings-btn {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.settings-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+}
+
+.settings-view {
+    padding: 20px;
+    background: var(--bg-color);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-weight: 500;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+.alias-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.alias-input-group input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text-color);
+    outline: none;
+}
+
+.alias-input-group input:focus {
+    border-color: var(--accent-color);
+}
+
+.alias-input-group button {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.alias-list-container {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#alias-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#alias-table th,
+#alias-table td {
+    padding: 10px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#alias-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 500;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#alias-table td {
+    font-size: 14px;
+}
+
+.delete-btn {
+    background: rgba(255, 59, 48, 0.2);
+    color: #ff3b30;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.delete-btn:hover {
+    background: rgba(255, 59, 48, 0.3);
+}

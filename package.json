@@ -1,0 +1,20 @@
+{
+    "name": "loupe-launcher",
+    "version": "1.0.0",
+    "description": "A modern Spotlight-like launcher for Linux",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron ."
+    },
+    "keywords": [
+        "launcher",
+        "spotlight",
+        "linux",
+        "electron"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^28.0.0"
+    }
+}
