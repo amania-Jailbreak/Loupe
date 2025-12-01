@@ -2,7 +2,7 @@
 
 <p align="center">
   <!-- ロゴ画像はここに配置してください -->
-  <img src="images/Loupe.png" alt="Loupe Logo" width="256">
+  <img src="images/Loupe.png" alt="Loupe Logo" width="128" height="128">
 </p>
 <p align="center">
   <img src="images/Create%20With%20Gemini%203%20Pro.png" alt="Create With Gemini 3 Pro" width="150">

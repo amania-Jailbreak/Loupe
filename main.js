@@ -26,6 +26,7 @@ function createWindow() {
         skipTaskbar: true,
         alwaysOnTop: true,
         show: true,
+        icon: path.join(__dirname, "images/Loupe.png"),
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             nodeIntegration: false,
@@ -44,7 +45,8 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    await pluginManager.syncPlugins();
     pluginManager.loadPlugins();
     createWindow();
 

@@ -4,7 +4,24 @@
     "description": "A modern Spotlight-like launcher for Linux",
     "main": "main.js",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "dist": "electron-builder"
+    },
+    "build": {
+        "appId": "com.amania.loupe",
+        "productName": "Loupe",
+        "linux": {
+            "target": [
+                "AppImage",
+                "deb"
+            ],
+            "category": "Utility",
+            "icon": "images/Loupe.png"
+        },
+        "files": [
+            "**/*",
+            "!plugins/*"
+        ]
     },
     "keywords": [
         "launcher",
@@ -12,9 +29,13 @@
         "linux",
         "electron"
     ],
-    "author": "",
+    "author": {
+        "name": "amania",
+        "email": "amania@example.com"
+    },
     "license": "MIT",
     "devDependencies": {
-        "electron": "^28.0.0"
+        "electron": "^28.0.0",
+        "electron-builder": "^26.0.12"
     }
 }

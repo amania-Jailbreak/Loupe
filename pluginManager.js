@@ -1,10 +1,69 @@
 const fs = require("fs");
 const path = require("path");
+const { app } = require("electron");
 
 class PluginManager {
     constructor() {
         this.plugins = [];
-        this.pluginsDir = path.join(__dirname, "plugins");
+        if (app.isPackaged) {
+            // If running as AppImage, look next to the AppImage file
+            if (process.env.APPIMAGE) {
+                this.pluginsDir = path.join(
+                    path.dirname(process.env.APPIMAGE),
+                    "plugins"
+                );
+            } else {
+                // Otherwise look next to the executable
+                this.pluginsDir = path.join(
+                    path.dirname(process.execPath),
+                    "plugins"
+                );
+            }
+        } else {
+            this.pluginsDir = path.join(__dirname, "plugins");
+        }
+    }
+
+    async syncPlugins() {
+        const REPO_API_URL =
+            "https://api.github.com/repos/amania-Jailbreak/Loupe/contents/plugins";
+        console.log("Checking for plugin updates from GitHub...");
+
+        try {
+            const response = await fetch(REPO_API_URL);
+            if (!response.ok) {
+                console.warn(
+                    `Failed to fetch plugin list: ${response.statusText}`
+                );
+                return;
+            }
+
+            const files = await response.json();
+
+            if (!fs.existsSync(this.pluginsDir)) {
+                fs.mkdirSync(this.pluginsDir, { recursive: true });
+            }
+
+            for (const file of files) {
+                if (file.name.endsWith(".js") && file.type === "file") {
+                    try {
+                        const fileRes = await fetch(file.download_url);
+                        if (fileRes.ok) {
+                            const content = await fileRes.text();
+                            fs.writeFileSync(
+                                path.join(this.pluginsDir, file.name),
+                                content
+                            );
+                            console.log(`Synced plugin: ${file.name}`);
+                        }
+                    } catch (err) {
+                        console.error(`Failed to download ${file.name}:`, err);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Plugin sync error (offline?):", error.message);
+        }
     }
 
     loadPlugins() {
