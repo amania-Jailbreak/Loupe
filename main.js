@@ -11,10 +11,12 @@ const {
 
 const path = require("path");
 const fs = require("fs");
-const pluginManager = require("./pluginManager");
+// const pluginManager = require("./pluginManager"); // Lazy load
 
+let pluginManager;
 let mainWindow;
-const ALIASES_PATH = path.join(__dirname, "aliases.json");
+// Use userData for aliases to ensure persistence in packaged app
+const ALIASES_PATH = path.join(app.getPath("userData"), "aliases.json");
 
 function createWindow() {
     const { width } = screen.getPrimaryDisplay().workAreaSize;
@@ -50,14 +52,22 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+    createWindow();
+
+    // Lazy load plugin manager to speed up startup
+    pluginManager = require("./pluginManager");
+
     // Only sync if plugins dir doesn't exist or is empty
     const pluginsDir = pluginManager.pluginsDir;
-    if (!fs.existsSync(pluginsDir) || fs.readdirSync(pluginsDir).length === 0) {
-        await pluginManager.syncPlugins();
+    try {
+        if (!fs.existsSync(pluginsDir) || fs.readdirSync(pluginsDir).length === 0) {
+            await pluginManager.syncPlugins();
+        }
+    } catch (e) {
+        console.error("Error checking plugins dir:", e);
     }
-
+    
     pluginManager.loadPlugins();
-    createWindow();
 
     app.on("activate", () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -108,7 +118,7 @@ ipcMain.handle("get-aliases", () => {
 ipcMain.handle("save-aliases", (event, aliases) => {
     try {
         fs.writeFileSync(ALIASES_PATH, JSON.stringify(aliases, null, 4));
-        pluginManager.reloadAliases(); // Notify plugins
+        if (pluginManager) pluginManager.reloadAliases(); // Notify plugins
         return true;
     } catch (e) {
         console.error("Failed to save aliases:", e);

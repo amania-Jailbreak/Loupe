@@ -5,23 +5,8 @@ const { app } = require("electron");
 class PluginManager {
     constructor() {
         this.plugins = [];
-        if (app.isPackaged) {
-            // If running as AppImage, look next to the AppImage file
-            if (process.env.APPIMAGE) {
-                this.pluginsDir = path.join(
-                    path.dirname(process.env.APPIMAGE),
-                    "plugins"
-                );
-            } else {
-                // Otherwise look next to the executable
-                this.pluginsDir = path.join(
-                    path.dirname(process.execPath),
-                    "plugins"
-                );
-            }
-        } else {
-            this.pluginsDir = path.join(__dirname, "plugins");
-        }
+        // Use userData for plugins to ensure persistence and write access
+        this.pluginsDir = path.join(app.getPath("userData"), "plugins");
 
         this.configPath = path.join(
             path.dirname(this.pluginsDir),
@@ -99,7 +84,7 @@ class PluginManager {
         }
     }
 
-    loadPlugins() {
+    loadPlugins(isReload = false) {
         if (!fs.existsSync(this.pluginsDir)) {
             fs.mkdirSync(this.pluginsDir);
         }
@@ -112,7 +97,9 @@ class PluginManager {
                 try {
                     const pluginPath = path.join(this.pluginsDir, file);
                     // Clear cache to allow hot reloading if needed
-                    delete require.cache[require.resolve(pluginPath)];
+                    if (isReload) {
+                        delete require.cache[require.resolve(pluginPath)];
+                    }
                     const plugin = require(pluginPath);
                     if (plugin.search && plugin.execute) {
                         this.plugins.push({
@@ -205,7 +192,7 @@ class PluginManager {
         if (item.plugin === "system") {
             if (item.action === "system-sync") {
                 this.syncPlugins().then(() => {
-                    this.loadPlugins();
+                    this.loadPlugins(true);
                     console.log("Plugins synced and reloaded");
                 });
                 return;

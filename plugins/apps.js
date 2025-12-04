@@ -108,6 +108,9 @@ function loadApps() {
 let aliases = {};
 function loadAliases() {
     try {
+        // In production, aliases are in userData
+        // But plugins are loaded via require, so we need to find the path relative to userData or pass it in
+        // Since we moved plugins to userData, we can look in parent dir
         const aliasPath = path.join(__dirname, "../aliases.json");
         if (fs.existsSync(aliasPath)) {
             aliases = JSON.parse(fs.readFileSync(aliasPath, "utf8"));
