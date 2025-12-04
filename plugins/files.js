@@ -21,6 +21,7 @@ const SEARCH_DIRS = [
 ];
 
 module.exports = {
+    prefix: "files",
     search: async (query) => {
         if (!query || query.length < 2) return []; // Require at least 2 chars
 

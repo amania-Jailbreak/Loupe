@@ -1,4 +1,5 @@
 const searchInput = document.getElementById("search-input");
+const suggestionOverlay = document.getElementById("suggestion-overlay");
 const resultsContainer = document.getElementById("results-container");
 
 let selectedIndex = 0;
@@ -7,6 +8,7 @@ let currentResults = [];
 searchInput.addEventListener("input", (e) => {
     const query = e.target.value;
     if (query.trim() === "") {
+        suggestionOverlay.value = "";
         renderResults([]);
         window.electronAPI.resizeWindow(60); // Reset to input height
         return;
@@ -17,9 +19,53 @@ searchInput.addEventListener("input", (e) => {
 window.electronAPI.onResults((results) => {
     currentResults = results;
     selectedIndex = 0;
+
+    // Update suggestion overlay
+    const query = searchInput.value;
+    let suggestion = "";
+
+    if (query) {
+        const lowerQuery = query.toLowerCase();
+
+        // 1. Check for explicit suggestion from result (e.g. plugin commands)
+        if (
+            results.length > 0 &&
+            results[0].suggestion &&
+            results[0].suggestion.toLowerCase().startsWith(lowerQuery)
+        ) {
+            suggestion = results[0].suggestion;
+        }
+        // 2. Check Aliases
+        else {
+            const matchedAlias = Object.keys(aliases).find(
+                (a) =>
+                    a.toLowerCase().startsWith(lowerQuery) &&
+                    a.toLowerCase() !== lowerQuery
+            );
+            if (matchedAlias) {
+                suggestion = matchedAlias;
+            }
+            // 3. Check top result title
+            else if (results.length > 0) {
+                const topResult = results[0].title;
+                if (topResult.toLowerCase().startsWith(lowerQuery)) {
+                    suggestion = topResult;
+                }
+            }
+        }
+    }
+
+    if (suggestion) {
+        // Preserve user's case for the typed part, append the rest from suggestion
+        const matchPart = query;
+        const suggestionPart = suggestion.substring(query.length);
+        suggestionOverlay.value = matchPart + suggestionPart;
+    } else {
+        suggestionOverlay.value = "";
+    }
+
     renderResults(results);
 });
-
 function renderResults(results) {
     resultsContainer.innerHTML = "";
 
@@ -89,7 +135,17 @@ function executeResult(result) {
 }
 
 searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") {
+    if (e.key === "Tab") {
+        e.preventDefault();
+        if (
+            suggestionOverlay.value &&
+            suggestionOverlay.value !== searchInput.value
+        ) {
+            searchInput.value = suggestionOverlay.value;
+            // Trigger search with new value
+            window.electronAPI.search(searchInput.value);
+        }
+    } else if (e.key === "ArrowDown") {
         e.preventDefault();
         selectedIndex = (selectedIndex + 1) % currentResults.length;
         updateSelection();
@@ -121,6 +177,9 @@ const aliasKeyInput = document.getElementById("alias-key");
 const aliasValueInput = document.getElementById("alias-value");
 
 let aliases = {};
+
+// Load aliases on startup
+window.electronAPI.getAliases().then((a) => (aliases = a));
 
 settingsBtn.addEventListener("click", async () => {
     if (settingsView.style.display === "none") {
@@ -196,6 +255,7 @@ async function saveAliases() {
 
 window.electronAPI.onResetSearch(() => {
     searchInput.value = "";
+    suggestionOverlay.value = "";
     renderResults([]);
     window.electronAPI.resizeWindow(60);
     if (settingsView.style.display !== "none") {

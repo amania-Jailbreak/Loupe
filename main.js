@@ -5,6 +5,10 @@ const {
     ipcMain,
     screen,
 } = require("electron");
+
+// Disable sandbox to avoid issues with AppImage on some Linux distros
+// This must be done before any other modules are loaded or app events are handled
+
 const path = require("path");
 const fs = require("fs");
 const pluginManager = require("./pluginManager");
@@ -46,7 +50,12 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-    await pluginManager.syncPlugins();
+    // Only sync if plugins dir doesn't exist or is empty
+    const pluginsDir = pluginManager.pluginsDir;
+    if (!fs.existsSync(pluginsDir) || fs.readdirSync(pluginsDir).length === 0) {
+        await pluginManager.syncPlugins();
+    }
+
     pluginManager.loadPlugins();
     createWindow();
 

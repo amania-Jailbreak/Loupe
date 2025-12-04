@@ -101,6 +101,7 @@ function loadAliases() {
 loadAliases();
 
 module.exports = {
+    prefix: "flatpak",
     search: async (query) => {
         if (!query) return [];
 

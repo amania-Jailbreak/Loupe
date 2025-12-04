@@ -22,6 +22,39 @@ class PluginManager {
         } else {
             this.pluginsDir = path.join(__dirname, "plugins");
         }
+
+        this.configPath = path.join(
+            path.dirname(this.pluginsDir),
+            "plugins.json"
+        );
+        this.disabledPlugins = new Set();
+        this.loadConfig();
+    }
+
+    loadConfig() {
+        try {
+            if (fs.existsSync(this.configPath)) {
+                const config = JSON.parse(
+                    fs.readFileSync(this.configPath, "utf8")
+                );
+                if (config.disabledPlugins) {
+                    this.disabledPlugins = new Set(config.disabledPlugins);
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load plugin config:", e);
+        }
+    }
+
+    saveConfig() {
+        try {
+            const config = {
+                disabledPlugins: Array.from(this.disabledPlugins),
+            };
+            fs.writeFileSync(this.configPath, JSON.stringify(config, null, 4));
+        } catch (e) {
+            console.error("Failed to save plugin config:", e);
+        }
     }
 
     async syncPlugins() {
@@ -98,7 +131,58 @@ class PluginManager {
     async search(query) {
         let allResults = [];
 
+        // System Commands
+        if (query === "Loupe-Plugin:Sync") {
+            return [
+                {
+                    title: "Sync Plugins",
+                    description: "Download latest plugins from GitHub",
+                    icon: "🔄",
+                    action: "system-sync",
+                    plugin: "system",
+                },
+            ];
+        }
+
         const promises = this.plugins.map(async (plugin) => {
+            const prefix = plugin.module.prefix;
+            const isEnabled = !this.disabledPlugins.has(plugin.name);
+
+            // Check for toggle commands
+            if (prefix) {
+                const disableCmd = `${prefix} disable`;
+                const enableCmd = `${prefix} enable`;
+
+                if (isEnabled && disableCmd.startsWith(query)) {
+                    return [
+                        {
+                            title: `Disable ${plugin.name}`,
+                            description: `Action: ${disableCmd}`,
+                            suggestion: disableCmd,
+                            icon: "🚫",
+                            action: "system-disable",
+                            value: plugin.name,
+                            plugin: "system",
+                        },
+                    ];
+                }
+                if (!isEnabled && enableCmd.startsWith(query)) {
+                    return [
+                        {
+                            title: `Enable ${plugin.name}`,
+                            description: `Action: ${enableCmd}`,
+                            suggestion: enableCmd,
+                            icon: "✅",
+                            action: "system-enable",
+                            value: plugin.name,
+                            plugin: "system",
+                        },
+                    ];
+                }
+            }
+
+            if (!isEnabled) return [];
+
             try {
                 const results = await plugin.module.search(query);
                 // Add plugin name to results for identification if needed
@@ -118,6 +202,35 @@ class PluginManager {
     }
 
     execute(item) {
+        if (item.plugin === "system") {
+            if (item.action === "system-sync") {
+                this.syncPlugins().then(() => {
+                    this.loadPlugins();
+                    console.log("Plugins synced and reloaded");
+                });
+                return;
+            }
+            if (item.action === "system-toggle") {
+                if (this.disabledPlugins.has(item.value)) {
+                    this.disabledPlugins.delete(item.value);
+                } else {
+                    this.disabledPlugins.add(item.value);
+                }
+                this.saveConfig();
+                return;
+            }
+            if (item.action === "system-disable") {
+                this.disabledPlugins.add(item.value);
+                this.saveConfig();
+                return;
+            }
+            if (item.action === "system-enable") {
+                this.disabledPlugins.delete(item.value);
+                this.saveConfig();
+                return;
+            }
+        }
+
         const plugin = this.plugins.find((p) => p.name === item.plugin);
         if (plugin) {
             try {

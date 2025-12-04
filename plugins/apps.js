@@ -119,6 +119,7 @@ function loadAliases() {
 loadAliases();
 
 module.exports = {
+    prefix: "apps",
     search: async (query) => {
         loadApps();
         if (!query) return [];
